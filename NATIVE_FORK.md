@@ -1,0 +1,2 @@
+# Light nibble ordering fix
+Base wupengabc/prismarine-chunk7d3dca822e7d1367f06d218dc902afa101425428 (@wp2508/prismarine-chunk1.41.3). Changes only PC1.18+ light read/write: packed nibbles use little-endian words, independently of big-endian block palettes. Test: node --test test/light-order.node.cjs. Test uses asymmetric sky/block values and verifies exact roundtrip. Includes native26.3 test coverage; no server or user data. Inherited upstream/third-party code retains its license and attribution.
