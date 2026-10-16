@@ -279,7 +279,12 @@ module.exports = (Block, mcData) => {
 
           if (!isEmpty) {
             const sectionReader = Buffer.from(data[currentSectionIndex++])
-            bitArray.readBuffer(SmartBuffer.fromBuffer(sectionReader))
+            // Light arrays are little-endian packed nibbles, unlike big-endian
+            // block-state palette longs. Preserve byte/nibble coordinate order.
+            if (sectionReader.length !== 2048) throw new Error('Invalid light nibble buffer length ' + sectionReader.length)
+            for (let i = 0; i < bitArray.data.length; i++) {
+              bitArray.data[i] = sectionReader.readUInt32LE(i * 4)
+            }
           }
         }
       }
@@ -344,7 +349,7 @@ module.exports = (Block, mcData) => {
       this.skyLightSections.forEach((section, index) => {
         if (section !== null && this.skyLightMask.get(index)) {
           const smartBuffer = new SmartBuffer()
-          section.writeBuffer(smartBuffer)
+          for (const word of section.data) smartBuffer.writeUInt32LE(word)
           skyLight.push(Uint8Array.from(smartBuffer.toBuffer()))
         }
       })
@@ -352,7 +357,7 @@ module.exports = (Block, mcData) => {
       this.blockLightSections.forEach((section, index) => {
         if (section !== null && this.blockLightMask.get(index)) {
           const smartBuffer = new SmartBuffer()
-          section.writeBuffer(smartBuffer)
+          for (const word of section.data) smartBuffer.writeUInt32LE(word)
           blockLight.push(Uint8Array.from(smartBuffer.toBuffer()))
         }
       })
